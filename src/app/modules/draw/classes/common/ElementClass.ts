@@ -1,5 +1,6 @@
 import {IElement} from '../../interfaces/IElement';
 import {ContainerClass} from './ContainerClass';
+import {WorkspaceClass} from '../WorkspaceClass';
 
 export class ElementClass {
 
@@ -7,14 +8,15 @@ export class ElementClass {
   container: ContainerClass;
   resizers: ResizersClass;
 
-  _selected: boolean = false;
+  protected _selected: boolean = false;
 
-  constructor(public $parent: SVGSVGElement, figure: IElement) {
+  constructor(public workspace: WorkspaceClass, figure: IElement) {
 
     this.container = new ContainerClass({width: 0, height: 0});
     this.figure = figure;
-    this.figure.parent = this.container;
+    this.figure.parent(this.container);
     this.resizers = new ResizersClass(this.figure);
+    console.log(this.container.$element.getBoundingClientRect());
     this.resizers.resizers.forEach(f => this.container.$element.appendChild(f.$element));
     this.addEvents();
   }
@@ -26,13 +28,12 @@ export class ElementClass {
     const bindMoveHandler = this.moveFigureHandler.bind(this);
 
     this.figure.$element.addEventListener('mousedown', (e) => {
-      this.selected = true;
       this.shiftX = e.offsetX - this.container.x;
       this.shiftY = e.offsetY - this.container.y;
-      this.$parent.addEventListener('mousemove', bindMoveHandler, true);
+      this.workspace.$element.addEventListener('mousemove', bindMoveHandler, true);
 
-      this.$parent.addEventListener('mouseup', () => {
-        this.$parent.removeEventListener('mousemove', bindMoveHandler, true);
+      this.workspace.$element.addEventListener('mouseup', () => {
+        this.workspace.$element.removeEventListener('mousemove', bindMoveHandler, true);
         this.shiftX = 0;
         this.shiftY = 0;
       });
@@ -43,9 +44,9 @@ export class ElementClass {
         const moveResizerHandlerBind = (ev) => {
           this.moveResizerHandler(ev, f);
         };
-        this.$parent.addEventListener('mousemove', moveResizerHandlerBind, true);
-        this.$parent.addEventListener('mouseup', () => {
-          this.$parent.removeEventListener('mousemove', moveResizerHandlerBind, true);
+        this.workspace.$element.addEventListener('mousemove', moveResizerHandlerBind, true);
+        this.workspace.$element.addEventListener('mouseup', () => {
+          this.workspace.$element.removeEventListener('mousemove', moveResizerHandlerBind, true);
         });
       });
     });
@@ -107,6 +108,7 @@ export class ElementClass {
         this.container.x = newWXL;
         break;
     }
+    this.figure.position();
     this.resizers.reposition();
   }
 
@@ -119,6 +121,12 @@ export class ElementClass {
   get selected(): boolean {
     return this._selected;
   }
+
+  reposition() {
+    this.figure.position();
+    this.resizers.reposition();
+  }
+
 }
 
 
@@ -171,13 +179,14 @@ class ResizerClass {
     resizer.setAttribute('height', this.size + '');
     resizer.setAttribute('stroke', 'blue');
     resizer.setAttribute('stroke-width', '1');
-    resizer.setAttribute('fill', '#F0F0F0');
-    resizer.setAttribute('rx', '0');
-    resizer.setAttribute('ry', '0');
+    resizer.setAttribute('fill', 'transparent');
+    resizer.setAttribute('rx', '2');
+    resizer.setAttribute('ry', '2');
     return resizer;
   }
 
   position() {
+    console.log(this.parentWidth);
     switch (this.type) {
       case ResizerType.LT:
         this.$element.setAttribute('x', '0');
@@ -185,14 +194,14 @@ class ResizerClass {
         break;
       case ResizerType.T:
         this.$element.setAttribute('x', ((this.parentWidth + this.size) / 2) + '');
-        this.$element.setAttribute('y', '-1');
+        this.$element.setAttribute('y', '0');
         break;
       case ResizerType.RT:
         this.$element.setAttribute('x', (this.parentWidth + this.size + 2) + '');
         this.$element.setAttribute('y', '0');
         break;
       case ResizerType.R:
-        this.$element.setAttribute('x', (this.parentWidth + this.size + 3) + '');
+        this.$element.setAttribute('x', (this.parentWidth + this.size + 2) + '');
         this.$element.setAttribute('y', ((this.parentHeight + this.size) / 2) + '');
         break;
       case ResizerType.RB:
@@ -201,14 +210,14 @@ class ResizerClass {
         break;
       case ResizerType.B:
         this.$element.setAttribute('x', ((this.parentWidth + this.size) / 2) + '');
-        this.$element.setAttribute('y', (this.parentHeight + this.size + 3) + '');
+        this.$element.setAttribute('y', (this.parentHeight + this.size + 2) + '');
         break;
       case ResizerType.LB:
         this.$element.setAttribute('x', '0');
         this.$element.setAttribute('y', (this.parentHeight + this.size + 2) + '');
         break;
       case ResizerType.L:
-        this.$element.setAttribute('x', '-1');
+        this.$element.setAttribute('x', '0');
         this.$element.setAttribute('y', ((this.parentHeight + this.size) / 2) + '');
         break;
     }
@@ -244,11 +253,11 @@ class ResizerClass {
   }
 
   get parentWidth(): number {
-    return +this.parent.$element.getAttribute('width');
+    return +this.parent.$element.getBoundingClientRect().width;
   }
 
   get parentHeight(): number {
-    return +this.parent.$element.getAttribute('height');
+    return +this.parent.$element.getBoundingClientRect().height;
   }
 
 }

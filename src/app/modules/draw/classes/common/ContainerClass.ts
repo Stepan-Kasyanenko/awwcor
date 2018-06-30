@@ -1,9 +1,11 @@
 import {ICoord} from '../../interfaces/ICoord';
+import {IElement} from '../../interfaces/IElement';
 
-export class ContainerClass {
+export class ContainerClass implements IElement {
   $element: SVGSVGElement;
   _x: number;
   _y: number;
+  selected: boolean;
 
   constructor(options: ICoord = {}) {
     this._x = options.x || 0;
@@ -12,6 +14,12 @@ export class ContainerClass {
     this.$element.style.overflow = 'visible';
   }
 
+  parent(val: ContainerClass) {
+  }
+
+  position() {
+
+  }
 
   get width(): number {
     return +this.$element.getBoundingClientRect().width;

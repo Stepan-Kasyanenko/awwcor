@@ -1,7 +1,9 @@
 <section class="container">
   <div class="panel">
-    <button (click)="addRect()" color="primary" mat-raised-button>Add shape</button>
-    <button color="primary" mat-raised-button>Add line</button>
+    <button (click)="addRect()" color="primary" mat-raised-button>Add rect</button>
+    <button (click)="addCircle()" color="primary" mat-raised-button>Add circle</button>
+    <button (click)="addLine()" color="primary" mat-raised-button>Add line</button>
+    <button (click)="deleteaFromWorksspace()" color="accent" mat-raised-button>Delete</button>
   </div>
   <div class="workspace-container">
     <svg class="workspace" #workspace>
