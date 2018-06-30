@@ -62,6 +62,7 @@ export class WorkspaceClass {
           let smallestRes = null;
           for (const res of el.resizers.resizers) {
             const distance = Math.sqrt(Math.pow(res.pageX - point.pageX, 2) + Math.pow(res.pageY - point.pageY, 2));
+            res.removeConnector(connector, type);
             if (distance < smallestDistance) {
               smallestDistance = distance;
               smallestRes = res;
@@ -89,8 +90,11 @@ export class WorkspaceClass {
   remove() {
     if (!this.selectedEl)
       return;
+    const ind = this.elements.indexOf(this.selectedEl);
+    if (ind === -1)
+      return;
     this.$element.removeChild(this.selectedEl.$element);
-    this.elements.splice(this.elements.indexOf(this.selectedEl), 1);
+    this.elements.splice(ind, 1);
     this.selectedEl.selected = false;
     this.selectedEl = null;
   }

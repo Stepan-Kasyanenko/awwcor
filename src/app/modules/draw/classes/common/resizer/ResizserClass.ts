@@ -65,10 +65,17 @@ export class ResizerClass {
   }
 
   addConnector(connector: ConnectorClass, type: ResizerType) {
-    if (this.connectors.some(s => s.connector === connector)) {
+    if (this.connectors.some(s => s.connector === connector && s.type === type)) {
       return;
     }
     this.connectors.push({connector: connector, type});
+  }
+
+  removeConnector(connector: ConnectorClass, type: ResizerType) {
+    const ind = this.connectors.findIndex(f => f.connector === connector && f.type === type);
+    if (ind === -1)
+      return;
+    this.connectors.splice(ind, 1);
   }
 
   positionConnectors() {
