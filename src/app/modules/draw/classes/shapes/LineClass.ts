@@ -26,11 +26,17 @@ export class LineClass extends ShapeClass {
   createElementTriangle(): SVGPolygonElement {
     const $rect = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
     $rect.setAttribute('fill', 'gray');
+    $rect.style.cursor = 'move';
     return $rect;
   }
 
+
   position() {
     super.position();
+    this.positionTriangle();
+  }
+
+  positionTriangle() {
     const p1 = [this.width + this.x, -6 + this.y].join(',');
     const p2 = [this.width + this.height + this.x, this.height / 2 + this.y].join(',');
     const p3 = [this.width + this.x, this.height + 6 + this.y].join(',');
@@ -39,6 +45,8 @@ export class LineClass extends ShapeClass {
 
   public parent(val: ContainerClass) {
     super.parent(val);
+    this._parent = val;
     this._parent.$element.appendChild(this.$elementTriangle);
   }
+
 }

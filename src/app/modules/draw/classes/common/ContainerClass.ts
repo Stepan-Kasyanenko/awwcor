@@ -1,11 +1,13 @@
 import {ICoord} from '../../interfaces/ICoord';
 import {IElement} from '../../interfaces/IElement';
+import {ElementClass} from './ElementClass';
 
 export class ContainerClass implements IElement {
   $element: SVGSVGElement;
   _x: number;
   _y: number;
   selected: boolean;
+  _parent: ElementClass;
 
   constructor(options: ICoord = {}) {
     this._x = options.x || 0;
@@ -53,6 +55,10 @@ export class ContainerClass implements IElement {
   set y(v: number) {
     this._y = v;
     this.$element.setAttribute('y', this._y + '');
+  }
+
+  rotate(angle, x, y) {
+    this.$element.setAttribute('transform', `rotate(${angle} ${x} ${y})`);
   }
 
 }

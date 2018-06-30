@@ -1,24 +1,43 @@
 import {IElement} from '../../interfaces/IElement';
 import {ContainerClass} from './ContainerClass';
 import {WorkspaceClass} from '../WorkspaceClass';
+import {ResizersClass} from './resizer/ResizersClass';
+import {ResizerType} from './resizer/ResizerType';
+import {ResizerClass} from './resizer/ResizserClass';
 
-export class ElementClass {
+export class ElementClass implements IElement {
 
+  public resizers: ResizersClass;
   figure: IElement;
   container: ContainerClass;
-  resizers: ResizersClass;
+  rotates: RotatesClass;
+
+  $element: any;
 
   protected _selected: boolean = false;
 
   constructor(public workspace: WorkspaceClass, figure: IElement) {
 
     this.container = new ContainerClass({width: 0, height: 0});
+    this.$element = this.container.$element;
+    this.container._parent = this;
     this.figure = figure;
     this.figure.parent(this.container);
-    this.resizers = new ResizersClass(this.figure);
-    console.log(this.container.$element.getBoundingClientRect());
+    this.resizers = new ResizersClass(this.figure, [
+      ResizerType.LT,
+      ResizerType.T,
+      ResizerType.RT,
+      ResizerType.R,
+      ResizerType.RB,
+      ResizerType.B,
+      ResizerType.LB,
+      ResizerType.L
+    ]);
     this.resizers.resizers.forEach(f => this.container.$element.appendChild(f.$element));
+    this.rotates = new RotatesClass(this.figure);
+    this.rotates.rotates.forEach(f => this.container.$element.appendChild(f.$element));
     this.addEvents();
+    this.selected = false;
   }
 
   private shiftX = 0;
@@ -51,6 +70,22 @@ export class ElementClass {
       });
     });
 
+    this.rotates.rotates.forEach(f => {
+      f.$element.addEventListener('mousedown', (e) => {
+        this.shiftX = e.offsetX;
+        this.shiftY = e.offsetY;
+        const moveHandlerBind = (ev) => {
+          this.moveRotateHandler(ev, f);
+        };
+        this.workspace.$element.addEventListener('mousemove', moveHandlerBind, true);
+        this.workspace.$element.addEventListener('mouseup', () => {
+          this.workspace.$element.removeEventListener('mousemove', moveHandlerBind, true);
+          this.shiftX = 0;
+          this.shiftY = 0;
+        });
+      });
+    });
+
   }
 
   moveFigureHandler(e: MouseEvent) {
@@ -58,6 +93,7 @@ export class ElementClass {
     const ny = e.offsetY - this.shiftY;
     this.container.x = nx;
     this.container.y = ny;
+    this.resizers.positionConnectors();
   }
 
   moveResizerHandler(e: MouseEvent, resizer: ResizerClass) {
@@ -110,11 +146,21 @@ export class ElementClass {
     }
     this.figure.position();
     this.resizers.reposition();
+    this.resizers.positionConnectors();
+    this.rotates.reposition();
+  }
+
+
+  moveRotateHandler(e: MouseEvent, rotate: RotateClass) {
+    const moveX = e.offsetX - this.shiftX;
+    const moveY = e.offsetY - this.shiftY;
+    this.container.rotate(Math.round((moveX / 100) * 180), 0, 0);
   }
 
   set selected(val: boolean) {
     this._selected = val;
     this.resizers.selected = val;
+    this.rotates.selected = val;
     this.figure.selected = val;
   }
 
@@ -125,36 +171,79 @@ export class ElementClass {
   reposition() {
     this.figure.position();
     this.resizers.reposition();
+    this.rotates.reposition();
   }
 
 }
 
-
-class ResizersClass {
-  resizers: ResizerClass[] = [];
+class RotatesClass {
+  rotates: RotateClass[] = [];
 
   _selected: boolean;
 
   constructor(public parent: IElement) {
-    for (const t of Object.keys(ResizerType)) {
+    for (const t of Object.keys(RotateType)) {
       if (!isNaN(+t)) {
-        const res = new ResizerClass(parent, +t);
-        this.resizers.push(res);
+        const res = new RotateClass(parent, +t);
+        this.rotates.push(res);
       }
     }
     this.selected = false;
   }
 
   public reposition() {
-    this.resizers.forEach(f => f.position());
+    this.rotates.forEach(f => f.position());
+  }
+
+  set selected(val: boolean) {
+    this._selected = val;
+    this.rotates.forEach(f => f.selected = this._selected);
+  }
+
+  get selected(): boolean {
+    return this._selected;
+  }
+}
+
+class RotateClass {
+  $element: SVGRectElement;
+  size = 8;
+  _selected: boolean;
+
+  constructor(public parent: IElement, public type: RotateType) {
+    this.$element = this.createElement();
+  }
+
+  createElement(): SVGRectElement {
+    const $rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    $rect.setAttribute('width', this.size + '');
+    $rect.setAttribute('height', this.size + '');
+    $rect.setAttribute('fill', 'orange');
+    $rect.setAttribute('stroke', 'blue');
+    $rect.setAttribute('stroke-width', '1');
+    $rect.setAttribute('rx', '1');
+    $rect.setAttribute('ry', '1');
+    $rect.style.cursor = 'alias';
+    return $rect;
+  }
+
+  position() {
+    if (this.type === RotateType.left) {
+      this.$element.setAttribute('x', '-20');
+      this.$element.setAttribute('y', ((this.parent.height + this.size) / 2) + '');
+    }
+    if (this.type === RotateType.right) {
+      this.$element.setAttribute('x', ((this.parent.width + 29)) + '');
+      this.$element.setAttribute('y', ((this.parent.height + this.size) / 2) + '');
+    }
   }
 
   set selected(val: boolean) {
     this._selected = val;
     if (this._selected) {
-      this.resizers.forEach(f => f.show());
+      this.$element.style.display = 'none';
     } else {
-      this.resizers.forEach(f => f.hide());
+      this.$element.style.display = 'none';
     }
   }
 
@@ -163,112 +252,6 @@ class ResizersClass {
   }
 }
 
-class ResizerClass {
-  public $element: SVGRectElement;
-  size = 8;
-
-  constructor(public parent: IElement, public type: ResizerType) {
-    this.$element = this.createElement();
-    this.position();
-    this.setCursor();
-  }
-
-  createElement() {
-    const resizer = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    resizer.setAttribute('width', this.size + '');
-    resizer.setAttribute('height', this.size + '');
-    resizer.setAttribute('stroke', 'blue');
-    resizer.setAttribute('stroke-width', '1');
-    resizer.setAttribute('fill', 'transparent');
-    resizer.setAttribute('rx', '2');
-    resizer.setAttribute('ry', '2');
-    return resizer;
-  }
-
-  position() {
-    console.log(this.parentWidth);
-    switch (this.type) {
-      case ResizerType.LT:
-        this.$element.setAttribute('x', '0');
-        this.$element.setAttribute('y', '0');
-        break;
-      case ResizerType.T:
-        this.$element.setAttribute('x', ((this.parentWidth + this.size) / 2) + '');
-        this.$element.setAttribute('y', '0');
-        break;
-      case ResizerType.RT:
-        this.$element.setAttribute('x', (this.parentWidth + this.size + 2) + '');
-        this.$element.setAttribute('y', '0');
-        break;
-      case ResizerType.R:
-        this.$element.setAttribute('x', (this.parentWidth + this.size + 2) + '');
-        this.$element.setAttribute('y', ((this.parentHeight + this.size) / 2) + '');
-        break;
-      case ResizerType.RB:
-        this.$element.setAttribute('x', (this.parentWidth + this.size + 2) + '');
-        this.$element.setAttribute('y', (this.parentHeight + this.size + 2) + '');
-        break;
-      case ResizerType.B:
-        this.$element.setAttribute('x', ((this.parentWidth + this.size) / 2) + '');
-        this.$element.setAttribute('y', (this.parentHeight + this.size + 2) + '');
-        break;
-      case ResizerType.LB:
-        this.$element.setAttribute('x', '0');
-        this.$element.setAttribute('y', (this.parentHeight + this.size + 2) + '');
-        break;
-      case ResizerType.L:
-        this.$element.setAttribute('x', '0');
-        this.$element.setAttribute('y', ((this.parentHeight + this.size) / 2) + '');
-        break;
-    }
-  }
-
-  setCursor() {
-    switch (this.type) {
-      case ResizerType.LT:
-      case ResizerType.RB:
-        this.$element.style.cursor = 'nwse-resize';
-        break;
-      case ResizerType.RT:
-      case ResizerType.LB:
-        this.$element.style.cursor = 'nesw-resize';
-        break;
-      case ResizerType.R:
-      case ResizerType.L:
-        this.$element.style.cursor = 'e-resize';
-        break;
-      case ResizerType.B:
-      case ResizerType.T:
-        this.$element.style.cursor = 'n-resize';
-        break;
-    }
-  }
-
-  show() {
-    this.$element.style.display = 'block';
-  }
-
-  hide() {
-    this.$element.style.display = 'none';
-  }
-
-  get parentWidth(): number {
-    return +this.parent.$element.getBoundingClientRect().width;
-  }
-
-  get parentHeight(): number {
-    return +this.parent.$element.getBoundingClientRect().height;
-  }
-
-}
-
-enum ResizerType {
-  LT,
-  T,
-  RT,
-  R,
-  RB,
-  B,
-  LB,
-  L
+enum RotateType {
+  left, right
 }

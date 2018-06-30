@@ -5,6 +5,7 @@ import {ICoord} from '../../interfaces/ICoord';
 export abstract class ShapeClass implements IElement {
   public $element: SVGRectElement;
   public _parent: ContainerClass;
+  public minSize: number = 5;
   _selected: boolean;
   _width: number;
   _height: number;
@@ -24,7 +25,6 @@ export abstract class ShapeClass implements IElement {
   public parent(val: ContainerClass) {
     this._parent = val;
     this._parent.$element.appendChild(this.$element);
-    this.position();
   }
 
   set selected(val: boolean) {
@@ -44,7 +44,7 @@ export abstract class ShapeClass implements IElement {
   }
 
   set width(val: number) {
-    this._width = Math.max(val, 5);
+    this._width = Math.max(val, this.minSize);
     this.$element.setAttribute('width', this._width + '');
   }
 
@@ -53,7 +53,7 @@ export abstract class ShapeClass implements IElement {
   }
 
   set height(val: number) {
-    this._height = Math.max(val, 5);
+    this._height = Math.max(val, this.minSize);
     this.$element.setAttribute('height', this._height + '');
   }
 
