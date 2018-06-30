@@ -15,11 +15,10 @@ export class WorkspaceComponent implements OnInit {
   @ViewChild('workspace') workspace: ElementRef;
 
   ngOnInit() {
-    console.log('WorkspaceComponent', this.workspace);
   }
 
   addRect() {
-    const rect = new RectClass(30, 30);
+    const rect = new RectClass({width: 50, height: 50});
     const element = new ElementClass(this.workspace.nativeElement, rect);
     this.workspace.nativeElement.appendChild(element.container.$element);
   }
