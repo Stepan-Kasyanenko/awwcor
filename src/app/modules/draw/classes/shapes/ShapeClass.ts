@@ -16,6 +16,7 @@ export class ShapeClass implements IElement {
 
   public $textContainer: SVGSVGElement;
   public $text: SVGTextElement;
+  public $title: SVGTitleElement;
 
   constructor(options: ICoord = {}) {
     this._width = options.width || 30;
@@ -35,13 +36,17 @@ export class ShapeClass implements IElement {
   public createText(x) {
     this.textShiftX = x;
     const $svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const $helpTitle = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    $helpTitle.textContent = 'Double click to change';
+    $svg.appendChild($helpTitle);
     const $text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    this.$title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
     $text.setAttribute('y', '15');
     $svg.setAttribute('x', x);
     $svg.setAttribute('y', '10');
     $svg.appendChild($text);
     $svg.style.overflow = 'hidden';
-    $svg.style.userSelect = 'none';
+    $text.style.userSelect = 'none';
     $svg.style.cursor = 'text';
     this.$textContainer = $svg;
     this.$text = $text;
@@ -52,7 +57,9 @@ export class ShapeClass implements IElement {
 
   set textContent(val: string) {
     this._textContent = val;
+    this.$title.textContent = val;
     this.splitText();
+    this.positionText();
   }
 
   get textContent(): string {
@@ -94,9 +101,8 @@ export class ShapeClass implements IElement {
     if (!this.$text)
       return;
     this.splitText();
-    let placeholderX = (this.width - this.$text.getBoundingClientRect().width) / 2;
-    let placeholderY = (this.height - this.$text.getBoundingClientRect().height) / 2;
-    console.log(this.height, this.width);
+    const placeholderX = (this.width - this.$text.getBoundingClientRect().width) / 2;
+    const placeholderY = (this.height - this.$text.getBoundingClientRect().height) / 2;
     if (placeholderX > 0 || placeholderY > 0) {
       this.$textContainer.setAttribute('x', Math.max(placeholderX, this.textShiftX) + '');
       this.$textContainer.setAttribute('y', Math.max(placeholderY, 10) + '');
@@ -104,7 +110,6 @@ export class ShapeClass implements IElement {
       this.$textContainer.setAttribute('x', this.textShiftX + '');
       this.$textContainer.setAttribute('y', 10 + '');
     }
-    console.log(placeholderX, placeholderY);
     this.$textContainer.setAttribute('width', (this.width - 12) + '');
     this.$textContainer.setAttribute('height', (this.height - 12) + '');
   }
@@ -114,6 +119,8 @@ export class ShapeClass implements IElement {
     this._parent.$element.appendChild(this.$element);
     if (this.$textContainer)
       this._parent.$element.appendChild(this.$textContainer);
+    if (this.$title)
+      this._parent.$element.appendChild(this.$title);
   }
 
   set selected(val: boolean) {

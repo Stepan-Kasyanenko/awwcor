@@ -7,8 +7,8 @@ export class RectClass extends ShapeClass {
     super(options);
     this.$element = this.createElement();
     this.setCursor();
-    this.createText(12);
-    this.textContent = 'Rectangle line2';
+    this.createText(20);
+    this.textContent = 'Rectangle';
   }
 
   createElement(): SVGRectElement {

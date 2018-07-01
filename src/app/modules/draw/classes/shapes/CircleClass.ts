@@ -7,8 +7,8 @@ export class CircleClass extends ShapeClass {
     super(options);
     this.$element = this.createElement();
     this.setCursor();
-    this.createText(16);
-    this.textContent = 'Circle line2';
+    this.createText(26);
+    this.textContent = 'Circle';
   }
 
   createElement(): SVGRectElement {

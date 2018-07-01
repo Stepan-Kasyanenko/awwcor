@@ -6,6 +6,7 @@ import {WorkspaceClass} from '../classes/WorkspaceClass';
 import {ShapeClass} from '../classes/shapes/ShapeClass';
 import {LineClass} from '../classes/shapes/LineClass';
 import {ConnectorClass} from '../classes/ConnectorClass';
+import {MatButton} from '@angular/material';
 
 @Component({
   selector: 'app-workspace',
@@ -16,6 +17,9 @@ export class WorkspaceComponent implements OnInit {
 
   workspace: WorkspaceClass;
   @ViewChild('workspace') workspaceElement: ElementRef;
+  @ViewChild('rectButton') rectButton: MatButton;
+
+  currentAction: Function;
 
   constructor() {
   }
@@ -23,37 +27,58 @@ export class WorkspaceComponent implements OnInit {
 
   ngOnInit() {
     this.workspace = new WorkspaceClass(this.workspaceElement.nativeElement);
-    this.addRect();
-    this.addConnector();
+    document.addEventListener('dragover', function (event) {
+      // prevent default to allow drop
+      event.preventDefault();
+    }, false);
+
   }
 
-  addRect() {
-    const rect = new RectClass({width: 50, height: 50});
-    this.addToWorksspace(rect);
+  addRect(x, y) {
+    const rect = new RectClass({width: 75, height: 75});
+    this.addToWorksspace(rect, x - 40, y - 40);
   }
 
-  addCircle() {
-    const circle = new CircleClass({width: 50, height: 50});
-    this.addToWorksspace(circle);
+  addCircle(x, y) {
+    const circle = new CircleClass({width: 75, height: 75});
+    this.addToWorksspace(circle, x - 40, y - 40);
   }
 
-  addLine() {
+  addLine(x, y) {
     const line = new LineClass({width: 100, height: 5});
-    this.addToWorksspace(line);
+    this.addToWorksspace(line, x - 55, y - 7.5);
   }
 
-  addConnector() {
-    const connector = new ConnectorClass(this.workspace, {x: 100, y: 20}, {x: 200, y: 20});
+  addConnector(x, y) {
+    const connector = new ConnectorClass(this.workspace, {x: x - 50, y: y}, {x: x + 50, y: y});
     this.workspace.add(connector);
   }
 
-  addToWorksspace(el: ShapeClass) {
-    const element = new ElementClass(this.workspace, el);
+  addToWorksspace(el: ShapeClass, x, y) {
+    const element = new ElementClass(this.workspace, el, {x: x, y: y});
     this.workspace.add(element);
   }
 
-  deleteaFromWorksspace() {
+  deleteFromWorkspace() {
     this.workspace.remove();
+  }
+
+  dragstart(e, action) {
+    e.dataTransfer.setData('text/plain', null);
+    this.currentAction = action;
+  }
+
+  dragover(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  }
+
+  drop(e) {
+    e.preventDefault();
+    if (!this.currentAction)
+      return;
+    this.currentAction.bind(this)(e.offsetX, e.offsetY);
+    this.currentAction = null;
   }
 
 }

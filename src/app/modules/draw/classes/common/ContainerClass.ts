@@ -10,10 +10,12 @@ export class ContainerClass implements IElement {
   _parent: ElementClass;
 
   constructor(options: ICoord = {}) {
-    this._x = options.x || 0;
-    this._y = options.y || 0;
     this.$element = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     this.$element.style.overflow = 'visible';
+    this._x = options.x || 0;
+    this._y = options.y || 0;
+    this.width = options.width ;
+    this.height = options.height;
   }
 
   parent(val: ContainerClass) {
@@ -28,7 +30,8 @@ export class ContainerClass implements IElement {
   }
 
   set width(val: number) {
-    this.$element.setAttribute('width', Math.max(val, 5) + '');
+    if(val)
+      this.$element.setAttribute('width', Math.max(val, 5) + '');
   }
 
   get height(): number {
@@ -36,7 +39,8 @@ export class ContainerClass implements IElement {
   }
 
   set height(val: number) {
-    this.$element.setAttribute('height', Math.max(val, 5) + '');
+    if(val)
+      this.$element.setAttribute('height', Math.max(val, 5) + '');
   }
 
   get x(): number {

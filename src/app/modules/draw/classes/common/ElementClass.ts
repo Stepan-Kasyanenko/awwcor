@@ -4,6 +4,7 @@ import {WorkspaceClass} from '../WorkspaceClass';
 import {ResizersClass} from './resizer/ResizersClass';
 import {ResizerType} from './resizer/ResizerType';
 import {ResizerClass} from './resizer/ResizserClass';
+import {ICoord} from '../../interfaces/ICoord';
 
 export class ElementClass implements IElement {
 
@@ -12,13 +13,16 @@ export class ElementClass implements IElement {
   container: ContainerClass;
   rotates: RotatesClass;
 
+  workX: number = 0;
+  workY: number = 0;
+
   $element: any;
 
   protected _selected: boolean = false;
 
-  constructor(public workspace: WorkspaceClass, figure: IElement) {
+  constructor(public workspace: WorkspaceClass, figure: IElement, point: ICoord) {
 
-    this.container = new ContainerClass({width: 0, height: 0});
+    this.container = new ContainerClass({});
     this.$element = this.container.$element;
     this.container._parent = this;
     this.figure = figure;
@@ -36,8 +40,13 @@ export class ElementClass implements IElement {
     this.resizers.resizers.forEach(f => this.container.$element.appendChild(f.$element));
     this.rotates = new RotatesClass(this.figure);
     this.rotates.rotates.forEach(f => this.container.$element.appendChild(f.$element));
+    this.container.x = point.x;
+    this.container.y = point.y;
     this.addEvents();
     this.selected = false;
+    const rect = this.workspace.$element.getBoundingClientRect();
+    this.workX = rect.left;
+    this.workY = rect.top;
   }
 
   private shiftX = 0;
@@ -47,61 +56,75 @@ export class ElementClass implements IElement {
     const bindMoveHandler = this.moveFigureHandler.bind(this);
 
     this.figure.$element.addEventListener('mousedown', (e) => {
-      this.shiftX = e.offsetX - this.container.x;
-      this.shiftY = e.offsetY - this.container.y;
+      this.shiftX = e.pageX - this.workX - this.container.x;
+      this.shiftY = e.pageY - this.workY - this.container.y;
       this.workspace.$element.addEventListener('mousemove', bindMoveHandler, true);
-
-      this.workspace.$element.addEventListener('mouseup', () => {
-        this.workspace.$element.removeEventListener('mousemove', bindMoveHandler, true);
-        this.shiftX = 0;
-        this.shiftY = 0;
-      });
+    });
+    this.workspace.$element.addEventListener('mouseup', () => {
+      this.workspace.$element.removeEventListener('mousemove', bindMoveHandler, true);
+      this.shiftX = 0;
+      this.shiftY = 0;
+    });
+    this.workspace.$element.addEventListener('mouseleave', () => {
+      this.workspace.$element.removeEventListener('mousemove', bindMoveHandler, true);
+      this.shiftX = 0;
+      this.shiftY = 0;
     });
 
     this.resizers.resizers.forEach(f => {
+      const moveResizerHandlerBind = (ev) => {
+        this.moveResizerHandler(ev, f);
+      };
       f.$element.addEventListener('mousedown', (e) => {
-        const moveResizerHandlerBind = (ev) => {
-          this.moveResizerHandler(ev, f);
-        };
         this.workspace.$element.addEventListener('mousemove', moveResizerHandlerBind, true);
-        this.workspace.$element.addEventListener('mouseup', () => {
-          this.workspace.$element.removeEventListener('mousemove', moveResizerHandlerBind, true);
-        });
+      });
+      this.workspace.$element.addEventListener('mouseup', () => {
+        this.workspace.$element.removeEventListener('mousemove', moveResizerHandlerBind, true);
+      });
+      this.workspace.$element.addEventListener('mouseleave', () => {
+        this.workspace.$element.removeEventListener('mousemove', moveResizerHandlerBind, true);
       });
     });
 
     this.rotates.rotates.forEach(f => {
+      const moveHandlerBind = (ev) => {
+        this.moveRotateHandler(ev, f);
+      };
       f.$element.addEventListener('mousedown', (e) => {
-        this.shiftX = e.offsetX;
-        this.shiftY = e.offsetY;
-        const moveHandlerBind = (ev) => {
-          this.moveRotateHandler(ev, f);
-        };
+        this.shiftX = e.pageX - this.workX;
+        this.shiftY = e.pageY - this.workY;
         this.workspace.$element.addEventListener('mousemove', moveHandlerBind, true);
-        this.workspace.$element.addEventListener('mouseup', () => {
-          this.workspace.$element.removeEventListener('mousemove', moveHandlerBind, true);
-          this.shiftX = 0;
-          this.shiftY = 0;
-        });
+      });
+      this.workspace.$element.addEventListener('mouseup', () => {
+        this.workspace.$element.removeEventListener('mousemove', moveHandlerBind, true);
+        this.shiftX = 0;
+        this.shiftY = 0;
+      });
+      this.workspace.$element.addEventListener('mouseleave', () => {
+        this.workspace.$element.removeEventListener('mousemove', moveHandlerBind, true);
+        this.shiftX = 0;
+        this.shiftY = 0;
       });
     });
 
   }
 
   moveFigureHandler(e: MouseEvent) {
-    const nx = e.offsetX - this.shiftX;
-    const ny = e.offsetY - this.shiftY;
+    const nx = e.pageX - this.workX - this.shiftX;
+    const ny = e.pageY - this.workY - this.shiftY;
     this.container.x = nx;
     this.container.y = ny;
     this.resizers.positionConnectors();
   }
 
   moveResizerHandler(e: MouseEvent, resizer: ResizerClass) {
-    const newWR = e.offsetX - this.container.x - this.figure.x - resizer.size / 2;
-    const newHB = e.offsetY - this.container.y - this.figure.y - resizer.size / 2;
 
-    const shiftL = this.container.x + resizer.size / 2 - e.offsetX;
-    const shiftY = this.container.y + resizer.size / 2 - e.offsetY;
+
+    const newWR = e.pageX - this.workX - this.container.x - this.figure.x - resizer.size / 2;
+    const newHB = e.pageY - this.workY - this.container.y - this.figure.y - resizer.size / 2;
+
+    const shiftL = this.container.x + resizer.size / 2 - (e.pageX - this.workX);
+    const shiftY = this.container.y + resizer.size / 2 - (e.pageY - this.workY);
     const newWL = this.figure.width + shiftL;
     const newWXL = this.container.x - shiftL;
     const newHT = this.figure.height + shiftY;

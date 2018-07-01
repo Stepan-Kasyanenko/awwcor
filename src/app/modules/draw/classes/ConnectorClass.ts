@@ -12,6 +12,9 @@ export class ConnectorClass {
 
   onMove: Function;
 
+  workX: number = 0;
+  workY: number = 0;
+
   constructor(public workspace: WorkspaceClass, public p1: ICoord = {x: 5, y: 20}, public  p2: ICoord = {x: 100, y: 20}) {
     this.$element = this.createElement();
     this.resizers = new ResizersClass(this, [
@@ -22,6 +25,9 @@ export class ConnectorClass {
     this.reposition();
     this.setCursor();
     this.addEvents();
+    const rect = this.workspace.$element.getBoundingClientRect();
+    this.workX = rect.left;
+    this.workY = rect.top;
   }
 
   createElement(): SVGLineElement {
@@ -31,6 +37,15 @@ export class ConnectorClass {
     return $line;
   }
 
+  //
+  //
+  // createElement(): SVGLineElement {
+  //   const $line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  //   $line.setAttribute('stroke', 'gray');
+  //   $line.setAttribute('stroke-width', '3');
+  //   return $line;
+  // }
+
   private shiftX = 0;
   private shiftY = 0;
 
@@ -38,47 +53,63 @@ export class ConnectorClass {
     const bindMoveHandler = this.moveFigureHandler.bind(this);
 
     this.$element.addEventListener('mousedown', (e) => {
-      this.shiftX = e.offsetX - this.p1.x;
-      this.shiftY = e.offsetY - this.p2.y;
+      this.shiftX = e.pageX - this.workX - this.p1.x;
+      this.shiftY = e.pageY - this.workY - this.p1.y;
       this.workspace.$element.addEventListener('mousemove', bindMoveHandler, true);
+    });
 
-      this.workspace.$element.addEventListener('mouseup', () => {
-        this.workspace.$element.removeEventListener('mousemove', bindMoveHandler, true);
-        this.shiftX = 0;
-        this.shiftY = 0;
-      });
+    this.workspace.$element.addEventListener('mouseup', () => {
+      this.workspace.$element.removeEventListener('mousemove', bindMoveHandler, true);
+      this.shiftX = 0;
+      this.shiftY = 0;
+    });
+
+    this.workspace.$element.addEventListener('mouseleave', () => {
+      this.workspace.$element.removeEventListener('mousemove', bindMoveHandler, true);
+      this.shiftX = 0;
+      this.shiftY = 0;
     });
 
     this.resizers.resizers.forEach(f => {
+      const moveResizerHandlerBind = (ev) => {
+        this.moveResizerHandler(ev, f);
+      };
       f.$element.addEventListener('mousedown', (e) => {
-        const moveResizerHandlerBind = (ev) => {
-          this.moveResizerHandler(ev, f);
-        };
         this.workspace.$element.addEventListener('mousemove', moveResizerHandlerBind, true);
-        this.workspace.$element.addEventListener('mouseup', () => {
-          this.workspace.$element.removeEventListener('mousemove', moveResizerHandlerBind, true);
-        });
+      });
+      this.workspace.$element.addEventListener('mouseup', () => {
+        this.workspace.$element.removeEventListener('mousemove', moveResizerHandlerBind, true);
+      });
+      this.workspace.$element.addEventListener('mouseleave', () => {
+        this.workspace.$element.removeEventListener('mousemove', moveResizerHandlerBind, true);
       });
     });
   }
 
 
   moveFigureHandler(e: MouseEvent) {
-    const nx1 = e.offsetX - this.shiftX;
-    const ny1 = e.offsetY - this.shiftY;
-    const nx2 = e.offsetX + (this.p2.x - this.p1.x) - this.shiftX;
-    const ny2 = e.offsetY + (this.p2.y - this.p1.y) - this.shiftY;
+    const offsetX = e.pageX - this.workX;
+    const offsetY = e.pageY - this.workY;
+    const nx1 = offsetX - this.shiftX;
+    const ny1 = offsetY - this.shiftY;
+    const nx2 = offsetX + (this.p2.x - this.p1.x) - this.shiftX;
+    const ny2 = offsetY + (this.p2.y - this.p1.y) - this.shiftY;
 
     this.p1.x = nx1;
     this.p1.y = ny1;
     this.p2.x = nx2;
     this.p2.y = ny2;
+    if (this.onMove) {
+      const rect = this.workspace.$element.getBoundingClientRect();
+      this.onMove({pageX: this.p1.x + rect.left, pageY: this.p1.y + rect.top}, ResizerType.L, false);
+      this.onMove({pageX: this.p2.x + rect.left, pageY: this.p2.y + rect.top}, ResizerType.R, false);
+    }
     this.reposition();
   }
 
   moveResizerHandler(e: MouseEvent, resizer: ResizerClass) {
-    const nx = e.offsetX + resizer.size / 2;
-    const ny = e.offsetY + resizer.size / 2;
+    const nx = e.pageX - this.workX + resizer.size / 2;
+    const ny = e.pageY - this.workY + resizer.size / 2;
     if (resizer.type === ResizerType.L) {
       this.setLeftPoint(nx, ny);
     }
@@ -87,7 +118,7 @@ export class ConnectorClass {
     }
 
     if (this.onMove)
-      this.onMove({pageX: e.pageX, pageY: e.pageY}, resizer.type);
+      this.onMove({pageX: e.pageX, pageY: e.pageY}, resizer.type,true);
     this.reposition();
   }
 

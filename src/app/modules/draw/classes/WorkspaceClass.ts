@@ -55,7 +55,7 @@ export class WorkspaceClass {
     const connector = element as ConnectorClass;
     if (connector) {
       connector.reposition();
-      connector.onMove = (point, type: ResizerType) => {
+      connector.onMove = (point, type: ResizerType, isConnect) => {
         for (const elem of this.elements.filter((f) => f instanceof ElementClass)) {
           const el = elem as ElementClass;
           let smallestDistance = Number.MAX_VALUE;
@@ -68,7 +68,7 @@ export class WorkspaceClass {
               smallestRes = res;
             }
           }
-          if (smallestDistance <= this.connectDistance) {
+          if (smallestDistance <= this.connectDistance && isConnect) {
             const rect = this.$element.getBoundingClientRect();
             if (type === ResizerType.L) {
               connector.p1.x = smallestRes.pageX - rect.left + smallestRes.size / 2;
