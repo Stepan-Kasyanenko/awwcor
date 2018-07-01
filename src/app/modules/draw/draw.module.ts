@@ -7,15 +7,11 @@ import 'hammerjs';
 import {WorkspaceComponent} from './workspace/workspace.component';
 import {drawRouting} from './draw.routing';
 
-// material
-import {MatButtonModule} from '@angular/material';
-
 @NgModule({
   imports: [
     CommonModule,
     CookieModule.forChild(),
-    drawRouting,
-    MatButtonModule
+    drawRouting
   ],
   declarations: [
     WorkspaceComponent

@@ -78,9 +78,8 @@ var AppComponent = /** @class */ (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("./node_modules/@angular/core/fesm5/core.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_ngx_cookie__ = __webpack_require__("./node_modules/ngx-cookie/fesm5/ngx-cookie.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__app_routing__ = __webpack_require__("./src/app/app.routing.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_material__ = __webpack_require__("./node_modules/@angular/material/esm5/material.es5.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__modules_draw_draw_module__ = __webpack_require__("./src/app/modules/draw/draw.module.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__app_component__ = __webpack_require__("./src/app/app.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__modules_draw_draw_module__ = __webpack_require__("./src/app/modules/draw/draw.module.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__app_component__ = __webpack_require__("./src/app/app.component.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -92,8 +91,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 
 // routing
 
-// material
-
 // modules
 
 // components
@@ -104,17 +101,16 @@ var AppModule = /** @class */ (function () {
     AppModule = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__["L" /* NgModule */])({
             declarations: [
-                __WEBPACK_IMPORTED_MODULE_6__app_component__["a" /* AppComponent */]
+                __WEBPACK_IMPORTED_MODULE_5__app_component__["a" /* AppComponent */]
             ],
             imports: [
                 __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["a" /* BrowserModule */].withServerTransition({ appId: 'serverApp' }),
                 __WEBPACK_IMPORTED_MODULE_2_ngx_cookie__["a" /* CookieModule */].forRoot(),
-                __WEBPACK_IMPORTED_MODULE_5__modules_draw_draw_module__["DrawModule"],
-                __WEBPACK_IMPORTED_MODULE_3__app_routing__["a" /* appRouting */],
-                __WEBPACK_IMPORTED_MODULE_4__angular_material__["b" /* MatButtonModule */]
+                __WEBPACK_IMPORTED_MODULE_4__modules_draw_draw_module__["DrawModule"],
+                __WEBPACK_IMPORTED_MODULE_3__app_routing__["a" /* appRouting */]
             ],
             providers: [],
-            bootstrap: [__WEBPACK_IMPORTED_MODULE_6__app_component__["a" /* AppComponent */]]
+            bootstrap: [__WEBPACK_IMPORTED_MODULE_5__app_component__["a" /* AppComponent */]]
         })
     ], AppModule);
     return AppModule;
@@ -1351,7 +1347,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_hammerjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_hammerjs__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__workspace_workspace_component__ = __webpack_require__("./src/app/modules/draw/workspace/workspace.component.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__draw_routing__ = __webpack_require__("./src/app/modules/draw/draw.routing.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__angular_material__ = __webpack_require__("./node_modules/@angular/material/esm5/material.es5.js");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -1365,8 +1360,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 // components
 
 
-// material
-
 var DrawModule = /** @class */ (function () {
     function DrawModule() {
     }
@@ -1375,8 +1368,7 @@ var DrawModule = /** @class */ (function () {
             imports: [
                 __WEBPACK_IMPORTED_MODULE_1__angular_common__["b" /* CommonModule */],
                 __WEBPACK_IMPORTED_MODULE_2_ngx_cookie__["a" /* CookieModule */].forChild(),
-                __WEBPACK_IMPORTED_MODULE_5__draw_routing__["a" /* drawRouting */],
-                __WEBPACK_IMPORTED_MODULE_6__angular_material__["b" /* MatButtonModule */]
+                __WEBPACK_IMPORTED_MODULE_5__draw_routing__["a" /* drawRouting */]
             ],
             declarations: [
                 __WEBPACK_IMPORTED_MODULE_4__workspace_workspace_component__["a" /* WorkspaceComponent */]
